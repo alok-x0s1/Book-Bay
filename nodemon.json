@@ -5,7 +5,8 @@
     "ext": "ts",
     "ignore": [
         "node_modules",
-        "src/**/*.spec.ts"
+        "src/**/*.spec.ts",
+        "dist/*"
     ],
-    "exec": "ts-node src/index.ts"
+    "exec": "ts-node --files src/index.ts"
 }
