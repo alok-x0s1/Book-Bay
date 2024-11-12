@@ -17,9 +17,14 @@ services:
         image: mongo:5.0
         ports:
             - "27017:27017"
+        volumes:
+          - mongo-data:/data/db    
         networks:
             - app-network
 
 networks:
     app-network:
         driver: bridge
+
+volumes:
+    mongo-data:
