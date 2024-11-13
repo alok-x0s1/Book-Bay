@@ -1,14 +1,16 @@
 import express, { Express } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { config } from "./config/config";
+import { globalErrorHandler } from "./middleware/globalErrorHandler";
 
 const app: Express = express();
 
 app.use(
-	cors({
-		origin: process.env.CORS_ORIGIN,
-		credentials: true,
-	})
+    cors({
+        origin: config.cors_origin,
+        credentials: true
+    })
 );
 
 app.use(express.json({ limit: "16kb" }));
@@ -31,5 +33,7 @@ app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/reviews", reviewRouter);
 app.use("/api/v1/categories", categoryRouter);
+
+app.use(globalErrorHandler);
 
 export default app;
