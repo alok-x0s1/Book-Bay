@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { errorResponse } from "../utils/response";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
+import { config } from "../config/config";
 
 interface JwtPayload {
     _id: string;
@@ -19,10 +20,7 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
             return;
         }
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET!
-        ) as JwtPayload;
+        const decoded = jwt.verify(token, config.jwt_secret) as JwtPayload;
 
         const existingUser = await User.findById(decoded._id);
 
