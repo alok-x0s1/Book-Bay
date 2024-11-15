@@ -4,6 +4,8 @@ import Book from "../models/book";
 import { bookSchema, updateBookSchema } from "../schema/book";
 import Category from "../models/category";
 import { deleteFromCloudinary, uploadOnCloudinary } from "../config/cloudinary";
+import findOrCreateCategory from "../utils/category";
+import { extractFiles, uploadFilesToCloudinary } from "../utils/extractFiles";
 
 const getBooks = async (req: Request, res: Response) => {
     try {
@@ -47,7 +49,7 @@ const getBooks = async (req: Request, res: Response) => {
                 [sortField]: sortOrder
             })
             .skip(skip)
-            .limit(limit);
+            .limit(limit).populate("category", "name");
 
         const paginationInfo = {
             totalBooks: await Book.countDocuments(),
@@ -74,7 +76,7 @@ const getBooks = async (req: Request, res: Response) => {
 const getSingleBook = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const book = await Book.findById(id);
+        const book = await Book.findById(id).populate("category", "name");
 
         if (!book) {
             errorResponse(res, "Book not found", 404);
@@ -99,25 +101,17 @@ const createBook = async (req: Request, res: Response) => {
         const { title, author, description, price, stock, category } =
             validData.data;
 
+        const existingCategory = await findOrCreateCategory(category);
+
         const files = req.files as {
             [fieldname: string]: Express.Multer.File[];
         };
+        const { coverImage, file } = extractFiles(files);
 
-        const coverImageLocalPath = files["coverImage"][0].path;
-        const coverImageFileName = files["coverImage"][0].filename;
-        const fileLocalPath = files["file"][0].path;
-        const fileName = files["file"][0].filename;
-
-        const coverImageCloudinary = await uploadOnCloudinary({
-            localFilePath: coverImageLocalPath,
-            fileName: coverImageFileName,
-            isFile: false
-        });
-        const fileCloudinary = await uploadOnCloudinary({
-            localFilePath: fileLocalPath,
-            fileName: fileName,
-            isFile: true
-        });
+        const [coverImageUrl, fileUrl] = await uploadFilesToCloudinary(
+            coverImage,
+            file
+        );
 
         const newBook = await Book.create({
             title,
@@ -125,19 +119,12 @@ const createBook = async (req: Request, res: Response) => {
             description,
             price,
             stock,
-            category,
-            coverImage: coverImageCloudinary?.secure_url,
-            file: fileCloudinary?.secure_url
+            category: existingCategory._id,
+            coverImage: coverImageUrl,
+            file: fileUrl
         });
 
-        const existingCategory = await Category.findOne({
-            name: category
-        });
-        if (!existingCategory) {
-            errorResponse(res, "Category not found", 404);
-            return;
-        }
-        existingCategory.books.push(newBook._id);
+        existingCategory.books.push(newBook.id);
         await existingCategory.save();
 
         successResponse(res, "Book created successfully", newBook, 201);
