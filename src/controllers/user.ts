@@ -162,6 +162,10 @@ const updatePassword = async (req: Request, res: Response) => {
 		}
 
 		const { currentPassword, newPassword } = validData.data;
+		if(newPassword === currentPassword) {
+			errorResponse(res, "New password cannot be same as current password", 400);
+			return
+		}
 		const existingUser = await User.findById(req.user?._id);
 		if (!existingUser) {
 			errorResponse(res, "User not found", 404);
