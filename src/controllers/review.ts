@@ -71,7 +71,7 @@ const editReview = async (req: Request, res: Response) => {
 			return;
 		}
 
-		if (existingReview.user.toString() !== userId) {
+		if (existingReview.user.toString() !== userId?.toString()) {
 			errorResponse(res, "Unauthorized", 401);
 			return;
 		}
