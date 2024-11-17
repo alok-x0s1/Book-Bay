@@ -34,6 +34,14 @@ app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/reviews", reviewRouter);
 app.use("/api/v1/categories", categoryRouter);
 
+app.get("/api/v1", (req, res) => {
+    res.json({
+        success: true,
+        message: "Server is up and running",
+        version: "1.0.0"
+    });
+});
+
 app.use(globalErrorHandler);
 
 export default app;
