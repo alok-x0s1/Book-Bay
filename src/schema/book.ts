@@ -11,18 +11,15 @@ export const bookSchema = z.object({
         .min(3, "Description is required")
         .max(500, "Description is too long"),
     price: z
-        .string()
-        .refine((val) => !isNaN(Number(val)), {
-            message: "Price must be a number"
-        })
-        .transform((val) => Number(val)),
+        .number()
+        .min(100, "Price must be at least 100")
+        .refine((val) => !isNaN(val), "Price must be a number"),
     stock: z
-        .string()
+        .number()
         .min(1, "Stock must be at least 1")
         .refine((val) => !isNaN(Number(val)), {
             message: "Stock must be a number"
-        })
-        .transform((val) => Number(val)),
+        }),
 
     category: z.string()
 });
@@ -38,16 +35,13 @@ export const updateBookSchema = z.object({
         .min(3, "Description is required")
         .max(500, "Description is too long"),
     price: z
-        .string()
-        .refine((val) => !isNaN(Number(val)), {
-            message: "Price must be a number"
-        })
-        .transform((val) => Number(val)),
+        .number()
+        .min(100, "Price must be at least 100")
+        .refine((val) => !isNaN(val), "Price must be a number"),
     stock: z
-        .string()
+        .number()
         .min(1, "Stock must be at least 1")
         .refine((val) => !isNaN(Number(val)), {
             message: "Stock must be a number"
         })
-        .transform((val) => Number(val))
 });

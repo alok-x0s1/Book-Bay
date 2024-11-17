@@ -49,7 +49,8 @@ const getBooks = async (req: Request, res: Response) => {
                 [sortField]: sortOrder
             })
             .skip(skip)
-            .limit(limit).populate("category", "name");
+            .limit(limit)
+            .populate("category", "name");
 
         const paginationInfo = {
             totalBooks: await Book.countDocuments(),
@@ -178,15 +179,10 @@ const deleteBook = async (req: Request, res: Response) => {
         await deleteFromCloudinary(deletedBook?.coverImage as string);
         await deleteFromCloudinary(deletedBook?.file as string);
 
-        await Category.findOneAndUpdate(
-            {
-                name: deletedBook.category
-            },
-            {
-                $pull: {
-                    books: deletedBook._id
-                }
-            }
+        await Category.findByIdAndUpdate(
+            deletedBook.category,
+            { $pull: { books: deletedBook._id } },
+            { new: true }
         );
 
         successResponse(res, "Book deleted successfully", {}, 200);
