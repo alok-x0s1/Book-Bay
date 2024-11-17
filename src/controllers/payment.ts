@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../utils/response";
-import Order from "../models/order";
+import Order, { OrderStatus } from "../models/order";
 import stripe from "../utils/stripe";
+import Payment, { PaymentStatus } from "../models/payment";
 
 const createPayment = async (req: Request, res: Response) => {
 	try {
@@ -15,13 +16,30 @@ const createPayment = async (req: Request, res: Response) => {
 		}
 
 		const paymentIntent = await stripe.paymentIntents.create({
-			amount: order.totalPrice * 100,
-			currency: "usd",
-			payment_method_types: ["card"],
-			metadata: {
-				order_id: order._id?.toString()!,
-			},
-		});
+            amount: Math.round(order.totalPrice * 100),
+            currency: "usd",
+            payment_method_types: ["card"],
+            metadata: {
+                order_id: order._id.toString(),
+            },
+        });
+
+        const payment = new Payment({
+            order: order._id,
+            amount: order.totalPrice,
+            status: PaymentStatus.PENDING,
+        });
+        await payment.save();
+
+		const paymentIntentStatus = paymentIntent.status;
+
+        if (paymentIntentStatus === "succeeded") {
+            payment.status = PaymentStatus.COMPLETED;
+			await payment.save();
+
+			order.status = OrderStatus.SHIPPED;
+			await order.save();
+        }
 
 		successResponse(res, "Payment intent created successfully", {
 			clientSecret: paymentIntent.client_secret,

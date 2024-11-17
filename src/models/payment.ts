@@ -1,6 +1,6 @@
 import { Document, model, Schema } from "mongoose";
 
-enum PaymentStatus {
+export enum PaymentStatus {
 	PENDING = "pending",
 	COMPLETED = "completed",
 	FAILED = "failed",

@@ -1,5 +1,6 @@
 import Stripe from "stripe";
+import { config } from "../config/config";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const stripe = new Stripe(config.stripe_secret_key);
 
 export default stripe;
