@@ -1,12 +1,12 @@
-import { Document, model, Schema } from "mongoose";
+import mongoose, { Document, model, Schema } from "mongoose";
 
 export interface ICartItems {
-	book: Schema.Types.ObjectId;
+	book: mongoose.Types.ObjectId;
 	quantity: number;
 }
 
 export interface ICart extends Document {
-	user: Schema.Types.ObjectId;
+	user: mongoose.Types.ObjectId;
 	items: ICartItems[];
 }
 
